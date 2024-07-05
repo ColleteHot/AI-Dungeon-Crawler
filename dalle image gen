@@ -1,0 +1,15 @@
+from openai import OpenAI
+from urllib.request import urlretrieve
+client = OpenAI(api_key = "sk-proj-MduORQWiwbEHFJDHNQnLT3BlbkFJzXOJKG2q6utiMNOtx3ID")
+
+response = client.images.generate(
+  model="dall-e-3",
+  prompt="90's grid based dungeon crawler enemy sprite",
+  size="1024x1024",
+  quality="standard",
+  n=1,
+)
+
+image_url = response.data[0].url
+urlretrieve(image_url, "image.png") #specify path
+print(image_url)
