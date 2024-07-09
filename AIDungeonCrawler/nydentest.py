@@ -1,7 +1,5 @@
 import pygame
 import random
-import copy
-import imagegen
 
 def makemaze(height, width):
     def printMaze(maze):
@@ -244,53 +242,22 @@ def makemaze(height, width):
     return maze
 
 
-def initialize_array(xsize, ysize):
-    copy_array = [[False] * xsize]
-    new_array = []
-    for i in range(ysize):
-        new_array += copy.deepcopy(copy_array)
-    return new_array
-
-
 def mapgen(height, width):
     global map
     map = makemaze(height, width)
 
 
 FRAMERATE = 120
-RECT_WIDTH = 7
-RECT_HEIGHT = 7
-MAP_WIDTH = 50
-MAP_HEIGHT = 50
-WIDTH = 700
-HEIGHT = 700
+RECT_WIDTH = 40
+RECT_HEIGHT = 40
+WIDTH = 720
+HEIGHT = 720
 
-mapgen(MAP_WIDTH, MAP_HEIGHT)
+mapgen(RECT_HEIGHT, RECT_WIDTH)
 
-<<<<<<< Updated upstream
-wall = pygame.image.load('wall.jpg')
-hero = pygame.image.load('hero.jpg')
-floor = pygame.image.load('stonefloor.jpg')
-#hero_img = imagegen.generate("Create an image of a knight hero with a sword and shield")
-#wall_img = imagegen.generate("Create an image of a brick wall texture")
-#floor_img = imagegen.generate("Create an image of a stone floor texture")
-wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-=======
-wall_img = pygame.image.load('download.jpg')
-hero_img = pygame.image.load('hero.jpg')
-floor_img = pygame.image.load('stonefloor.jpg')
-#hero_img = imagegen.generate("Create an image of a knight hero with a sword and shield")
-#wall_img = imagegen.generate("Create an image of a brick wall texture")
-#floor_img = imagegen.generate("Create an image of a stone floor texture")
-wall_img = pygame.transform.scale(wall_img, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-hero_img = pygame.transform.scale(hero_img, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-floor_img = pygame.transform.scale(floor_img, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
->>>>>>> Stashed changes
 
 pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen = pygame.display.set_mode((WIDTH - 1, HEIGHT - 1))
 pygame.display.set_caption('AI Dungeon Crawler')
 clock = pygame.time.Clock()
 running = True
@@ -305,25 +272,9 @@ def find_top_empty(arr):
         if arr[0][x] == 'c':
             return x
 
-
 playerX = find_top_empty(map)
 playerY = 0
-camX = RECT_WIDTH // 2
-camY = RECT_HEIGHT // 2
 
-def move_camera(arr):
-    sidex = RECT_WIDTH // 2
-    sidey = RECT_HEIGHT // 2
-    if playerX + sidex < MAP_WIDTH and playerX - sidex > 0 and playerX + sidey < MAP_HEIGHT and playerY - sidey > 0:
-        return False
-    else:
-        return True
-
-
-def within_cam_range(x, y):
-    sidex = RECT_WIDTH // 2
-    sidey = RECT_HEIGHT // 2
-    return (camX - sidex <= x <= camX + sidex) and (camY - sidey <= y <= camY + sidey)
 
 def draw_pixels(arr):
     width_ratio = (WIDTH // RECT_WIDTH)
@@ -332,112 +283,33 @@ def draw_pixels(arr):
         for y in range(len(arr[x])):
             if (y == playerX) and (x == playerY):
                 pygame.draw.rect(screen, BLUE, pygame.Rect(y * width_ratio, x * height_ratio,
-                                                            width_ratio, height_ratio ))
+                                                            width_ratio - 1, height_ratio - 1))
             elif arr[x][y] == 'c':
                 pygame.draw.rect(screen, BLACK, pygame.Rect(y * width_ratio, x * height_ratio,
-                                                            width_ratio, height_ratio))
+                                                            width_ratio - 1, height_ratio - 1))
             else:
                 pygame.draw.rect(screen, WHITE, pygame.Rect(y * width_ratio, x * height_ratio,
-                                                            width_ratio, height_ratio))
+                                                            width_ratio - 1, height_ratio - 1))
 
-def draw_images(arr):
-    width_ratio = (WIDTH // RECT_WIDTH)
-    height_ratio = (HEIGHT // RECT_HEIGHT)
-    sizeX = RECT_WIDTH // 2
-    sizeY = RECT_HEIGHT // 2
-    for x in range(len(arr)):
-        for y in range(len(arr[x])):
-            if within_cam_range(y, x):
-                if arr[x][y] == 'w':
-                    screen.blit(wall_img, ((y - camX + sizeX) * width_ratio, (x - camY + sizeY) * height_ratio))
-                elif arr[x][y] == 'c' and not ((y == playerX) and (x == playerY)):
-                    screen.blit(floor_img, ((y - camX + sizeX) * width_ratio, (x - camY + sizeY) * height_ratio))
 
-<<<<<<< Updated upstream
-
-zoomout = False
-
-while running:
-    screen.fill(BLACK)
-=======
 while running:
     screen.fill(WHITE)
->>>>>>> Stashed changes
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_d:
-<<<<<<< Updated upstream
-                if map[playerY][playerX + 1] == 'c' and not zoomout:
-                    playerX += 1
-                    if camX - playerX < 0:
-                        camX += 1
-            if event.key == pygame.K_a:
-                if map[playerY][playerX - 1] == 'c' and not zoomout:
-                    playerX -= 1
-                    if camX - playerX > 0:
-                        camX -= 1
-            if event.key == pygame.K_w:
-                if map[playerY - 1][playerX] == 'c' and not zoomout:
-                    playerY -= 1
-                    if camY - playerY > 0:
-                        camY -= 1
-            if event.key == pygame.K_s:
-                if map[playerY + 1][playerX] == 'c' and not zoomout:
-                    playerY += 1
-                    if camY - playerY < 0:
-                        camY += 1
-            if event.key == pygame.K_e:
-                zoomout = not zoomout
-                if zoomout:
-                    RECT_HEIGHT = MAP_HEIGHT
-                    RECT_WIDTH = MAP_WIDTH
-                    camX = RECT_WIDTH // 2
-                    camY = RECT_HEIGHT // 2
-                    wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                else:
-                    RECT_HEIGHT = 7
-                    RECT_WIDTH = 7
-                    camX = playerX
-                    camY = playerY
-                    wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-    #draw_pixels(map)
-    sizeX = RECT_WIDTH // 2
-    sizeY = RECT_HEIGHT // 2
-    draw_images(map)
-    screen.blit(hero_img, ((playerX - camX + sizeX) * (WIDTH // RECT_WIDTH), (playerY - camY + sizeY) * (HEIGHT // RECT_HEIGHT)))
-=======
                 if map[playerY][playerX + 1] == 'c':
                     playerX += 1
-                    if camX + (camX // 2) < MAP_WIDTH:
-                        camX += 1
             if event.key == pygame.K_a:
                 if map[playerY][playerX - 1] == 'c':
                     playerX -= 1
-                    if camX - (camX // 2) > 0:
-                        camX -= 1
             if event.key == pygame.K_w:
                 if map[playerY - 1][playerX] == 'c':
                     playerY -= 1
-                    if camY - (camY // 2) > 0:
-                        camY -= 1
             if event.key == pygame.K_s:
                 if map[playerY + 1][playerX] == 'c':
                     playerY += 1
-                    if camY + (camY // 2) + 1 < MAP_HEIGHT:
-                        camY += 1
-            if event.key == pygame.K_e:
-                print(camX, camY)
-    #draw_pixels(map)
-    sizeX = camX // 2
-    sizeY = camY // 2
-    screen.blit(hero_img, ((camX - playerX + sizeX) * (WIDTH // RECT_WIDTH), (camY - playerY + sizeY) * (HEIGHT // RECT_HEIGHT)))
-    draw_images(map)
->>>>>>> Stashed changes
+    draw_pixels(map)
     pygame.display.flip()
     clock.tick(FRAMERATE)

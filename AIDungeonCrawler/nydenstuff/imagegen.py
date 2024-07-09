@@ -1,8 +1,13 @@
 from openai import OpenAI
 import pygame
+<<<<<<< Updated upstream
 from PIL import Image
 import io
 import requests
+=======
+import io
+
+>>>>>>> Stashed changes
 client = OpenAI(api_key = "sk-proj-MduORQWiwbEHFJDHNQnLT3BlbkFJzXOJKG2q6utiMNOtx3ID")
 
 def generate(prompt):
