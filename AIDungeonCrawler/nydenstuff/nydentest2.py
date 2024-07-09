@@ -258,12 +258,14 @@ def mapgen(height, width):
 
 
 FRAMERATE = 120
-RECT_WIDTH = 12
-RECT_HEIGHT = 12
-WIDTH = 720
-HEIGHT = 720
+RECT_WIDTH = 7
+RECT_HEIGHT = 7
+MAP_WIDTH = 50
+MAP_HEIGHT = 50
+WIDTH = 700
+HEIGHT = 700
 
-mapgen(RECT_HEIGHT, RECT_WIDTH)
+mapgen(MAP_WIDTH, MAP_HEIGHT)
 
 wall_img = pygame.image.load('wall.jpg')
 hero_img = pygame.image.load('hero.jpg')
@@ -294,7 +296,22 @@ def find_top_empty(arr):
 
 playerX = find_top_empty(map)
 playerY = 0
+camX = RECT_WIDTH // 2
+camY = RECT_HEIGHT // 2
 
+def move_camera(arr):
+    sidex = RECT_WIDTH // 2
+    sidey = RECT_HEIGHT // 2
+    if playerX + sidex < MAP_WIDTH and playerX - sidex > 0 and playerX + sidey < MAP_HEIGHT and playerY - sidey > 0:
+        return False
+    else:
+        return True
+
+
+def within_cam_range(x, y):
+    sidex = RECT_WIDTH // 2
+    sidey = RECT_HEIGHT // 2
+    return (camX - sidex <= x <= camX + sidex) and (camY - sidey <= y <= camY + sidey)
 
 def draw_pixels(arr):
     width_ratio = (WIDTH // RECT_WIDTH)
@@ -314,15 +331,18 @@ def draw_pixels(arr):
 def draw_images(arr):
     width_ratio = (WIDTH // RECT_WIDTH)
     height_ratio = (HEIGHT // RECT_HEIGHT)
+    sizeX = RECT_WIDTH // 2
+    sizeY = RECT_HEIGHT // 2
     for x in range(len(arr)):
         for y in range(len(arr[x])):
-            if arr[x][y] == 'w':
-                screen.blit(wall_img, (y * width_ratio, x * height_ratio))
-            elif arr[x][y] == 'c' and not ((y == playerX) and (x == playerY)):
-                screen.blit(floor_img, (y * width_ratio, x * height_ratio))
+            if within_cam_range(y, x):
+                if arr[x][y] == 'w':
+                    screen.blit(wall_img, ((y - camX + sizeX) * width_ratio, (x - camY + sizeY) * height_ratio))
+                elif arr[x][y] == 'c' and not ((y == playerX) and (x == playerY)):
+                    screen.blit(floor_img, ((y - camX + sizeX) * width_ratio, (x - camY + sizeY) * height_ratio))
 
 while running:
-    screen.fill(WHITE)
+    screen.fill(BLACK)
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -330,17 +350,29 @@ while running:
             if event.key == pygame.K_d:
                 if map[playerY][playerX + 1] == 'c':
                     playerX += 1
+                    if camX - playerX < 0:
+                        camX += 1
             if event.key == pygame.K_a:
                 if map[playerY][playerX - 1] == 'c':
                     playerX -= 1
+                    if camX - playerX > 0:
+                        camX -= 1
             if event.key == pygame.K_w:
                 if map[playerY - 1][playerX] == 'c':
                     playerY -= 1
+                    if camY - playerY > 0:
+                        camY -= 1
             if event.key == pygame.K_s:
                 if map[playerY + 1][playerX] == 'c':
                     playerY += 1
-    draw_pixels(map)
-    screen.blit(hero_img, (playerX * (WIDTH // RECT_WIDTH), playerY * (HEIGHT // RECT_HEIGHT)))
+                    if camY - playerY < 0:
+                        camY += 1
+            if event.key == pygame.K_e:
+                print((playerX - camX + RECT_WIDTH // 2), (playerY - camY + RECT_HEIGHT // 2))
+    #draw_pixels(map)
+    sizeX = RECT_WIDTH // 2
+    sizeY = RECT_HEIGHT // 2
+    screen.blit(hero_img, ((playerX - camX + sizeX) * (WIDTH // RECT_WIDTH), (playerY - camY + sizeY) * (HEIGHT // RECT_HEIGHT)))
     draw_images(map)
     pygame.display.flip()
     clock.tick(FRAMERATE)
