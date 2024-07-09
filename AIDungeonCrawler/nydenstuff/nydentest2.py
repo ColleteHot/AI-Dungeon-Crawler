@@ -267,7 +267,6 @@ HEIGHT = 700
 
 mapgen(MAP_WIDTH, MAP_HEIGHT)
 
-<<<<<<< Updated upstream
 wall = pygame.image.load('wall.jpg')
 hero = pygame.image.load('hero.jpg')
 floor = pygame.image.load('stonefloor.jpg')
@@ -277,17 +276,6 @@ floor = pygame.image.load('stonefloor.jpg')
 wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-=======
-wall_img = pygame.image.load('download.jpg')
-hero_img = pygame.image.load('hero.jpg')
-floor_img = pygame.image.load('stonefloor.jpg')
-#hero_img = imagegen.generate("Create an image of a knight hero with a sword and shield")
-#wall_img = imagegen.generate("Create an image of a brick wall texture")
-#floor_img = imagegen.generate("Create an image of a stone floor texture")
-wall_img = pygame.transform.scale(wall_img, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-hero_img = pygame.transform.scale(hero_img, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-floor_img = pygame.transform.scale(floor_img, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
->>>>>>> Stashed changes
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -353,22 +341,16 @@ def draw_images(arr):
                 elif arr[x][y] == 'c' and not ((y == playerX) and (x == playerY)):
                     screen.blit(floor_img, ((y - camX + sizeX) * width_ratio, (x - camY + sizeY) * height_ratio))
 
-<<<<<<< Updated upstream
 
 zoomout = False
 
 while running:
     screen.fill(BLACK)
-=======
-while running:
-    screen.fill(WHITE)
->>>>>>> Stashed changes
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_d:
-<<<<<<< Updated upstream
                 if map[playerY][playerX + 1] == 'c' and not zoomout:
                     playerX += 1
                     if camX - playerX < 0:
@@ -411,33 +393,5 @@ while running:
     sizeY = RECT_HEIGHT // 2
     draw_images(map)
     screen.blit(hero_img, ((playerX - camX + sizeX) * (WIDTH // RECT_WIDTH), (playerY - camY + sizeY) * (HEIGHT // RECT_HEIGHT)))
-=======
-                if map[playerY][playerX + 1] == 'c':
-                    playerX += 1
-                    if camX + (camX // 2) < MAP_WIDTH:
-                        camX += 1
-            if event.key == pygame.K_a:
-                if map[playerY][playerX - 1] == 'c':
-                    playerX -= 1
-                    if camX - (camX // 2) > 0:
-                        camX -= 1
-            if event.key == pygame.K_w:
-                if map[playerY - 1][playerX] == 'c':
-                    playerY -= 1
-                    if camY - (camY // 2) > 0:
-                        camY -= 1
-            if event.key == pygame.K_s:
-                if map[playerY + 1][playerX] == 'c':
-                    playerY += 1
-                    if camY + (camY // 2) + 1 < MAP_HEIGHT:
-                        camY += 1
-            if event.key == pygame.K_e:
-                print(camX, camY)
-    #draw_pixels(map)
-    sizeX = camX // 2
-    sizeY = camY // 2
-    screen.blit(hero_img, ((camX - playerX + sizeX) * (WIDTH // RECT_WIDTH), (camY - playerY + sizeY) * (HEIGHT // RECT_HEIGHT)))
-    draw_images(map)
->>>>>>> Stashed changes
     pygame.display.flip()
     clock.tick(FRAMERATE)
