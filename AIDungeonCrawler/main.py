@@ -1,32 +1,40 @@
 #! python 3
-import pygame, sys, random, time, numpy as np
+import pygame, sys, random, time, numpy as np, musicTesting as mt
 from openai import OpenAI
 global floor
+client = OpenAI(
+    api_key = "sk-proj-MfQUU6kDUqNSxpmi7q9ET3BlbkFJbM27VwUuRHqM4qi2ePKh"
+)
+enemies = []
 
 floor = 1
 class Player:
-    def __init__(self, mana, health):
+    def __init__(self):
+        #Health and mana are not needed for the player's initial input as they can be amended later on
         self.mana = 100
         self.health = 100
-        self.inventory = [''*10]
+        self.inventory = [item0,item1,item2,item3,item4,item5,item6,item7,item8,item9]
+        #inventory will be kept to a max of 10, however, empty spaces are not condoned
         self.x = 0
         self.y = 0
         self.icon = "@"
         self.color = (0,250,0)
         self.gold = 0
+        self.mana = 100
+        self.name = ""
 
 
 class Enemy:
-    def __init__(self, health, name, inventoryLoot, damage, monsterPortrait):
-        self.health = 1
-        self.name = "Jerry"
+    def __init__(self, health, name, inventoryLoot, damage,x,y ,description):
+        self.health = health
+        self.name = name
         self.inventoryLoot = []
-        self.x = width-1
-        self.x = height-1
-        self.icon = letterList[random.randInt(0,51)]
+        self.x = x
+        self.y = y
+        self.icon = (str(x) + ","+str(y))
         self.color = (250,0,0)
-        self.damage = 1
-        self.monsterPortrait
+        self.damage = damage
+        self.description = description
 #         use these for reference:
 #         populateEnemy()
 #         enemyAi()
@@ -49,6 +57,9 @@ class Item:
         else:
             self.strength = 0
 
+        if typeNumber == 999:
+            self.baseDamage = 0
+            self.name = "placeholderItem"
         if typeList[typeNumber] == "sword":
             self.baseDamage = 40
 
@@ -87,8 +98,36 @@ class Item:
 
 #         strength modifies attack damage of the sword, with strength 0 as a base of 100% damage, 1 as 110%, and so on
 
+#def mapEnemyAI():
 
+    #isn't this term used elsewhere?
 
+def combat(bumpedIntoEnemy):
+    dukingItOut = True
+    print("You have entered combat.")
+    while dukingItOut:
+        print(f"""
+    {theOG.name}                     {bumpedIntoEnemy.name}
+    Health: {theOG.health} Health: {bumpedIntoEnemy.health}
+    Mana: {theOG.mana}
+    
+    Choose your weapon: 
+    I for inventory
+    S for spells
+    """)
+        theChoice = input().capitalize().strip()
+        if theChoice == "I":
+            for i in range(len(theOG.inventory)):
+                print((i+1) + ". " + theOG.inventory[i].name)
+            theSubChoice = int(input("Choose your number: "))
+            print("You attack with your "+theOG.inventory[theSubChoice-1].name+" dealing "+theOG.inventory[theSubChoice-1].damage+" damage!")
+        elif theChoice == "S":
+            for i in range(len(theOG.spellbook)):
+                print((i + 1) + ". " + theOG.inventory[i].name)
+            theSubChoice = int(input("Choose your number: "))
+            print("You cast "++"")
+        else:
+            dukingItOut = True
 
 def makemaze(height, width):
     def printMaze(maze):
@@ -329,57 +368,193 @@ def makemaze(height, width):
 
     # Print final maze
     return maze
+def aienemygen(lol):
 
+
+    system_data = [
+        {"role": "system", "content": "Generate a generic dungeon crawler enemy, create a name. Then give a brief description. Then specify if the armor is Light, Medium, or Heavy after that using that wording Then say if its Quick, Average, or Slow, with that wording. "},
+        {"role": "user", "content": lol}
+    ]
+
+    response = client.chat.completions.create(
+        model = "gpt-3.5-turbo",
+        messages = system_data
+    )
+
+    assistant_response = response.choices[0].message.content
+    system_data.append({"role": "assistant", "content": assistant_response})
+    print(assistant_response)
+    l = str(assistant_response)
+    k = l.find("Description: ")
+    c = 0
+    name = ''
+    for i in range(6,k-2):
+        name = name + l[i]
+    final = [name]
+
+    match l[len(l)-1]:
+        case "k":
+            final.append("Quick")
+            c = 5
+        case'e':
+            final.append("Average")
+            c = 7
+        case 'w':
+            final.append("Slow")
+            c = 4
+
+    match l[len(l)-1-c-9]:
+
+        case 'y':
+            final.append("Heavy")
+            c += 5
+        case 'm':
+            final.append("Medium")
+            c = c + 6
+        case 't':
+            final.append("Light")
+            c = c + 5
+
+    description = ''
+    for i in range(k, (len(l)-c-17)):
+        description = description + l[i]
+
+    final.append(description)
+    return final
 
 def gencheck(x,y):
-    if maze[x][y] == "c":
-        return True
-    else:
-        return False
-def gen(height):
-    i= random.randint(0,height)
-    if i != 0:
-        return i
+    while map[x][y] != "c":
+        x = random.randint(0,RECT_WIDTH-1)
+        y = random.randint(0,RECT_HEIGHT-1)
+    map[x][y] = 'E'
+    return [x,y]
+def populateEnemy(monsterTier):
+    aiimport = aienemygen('tiny enemy')
+    name = aiimport[0]
+    speed = aiimport[1]
+    armor = aiimport[2]
+    description = aiimport[3]
+    x= random.randint (0,RECT_WIDTH)
+    y= random.randint (0,RECT_HEIGHT)
 
-def roomgen():
-    print("lootgen")
-#def enemyAi():
 
-def populateEnemy(monsterTier, x, y, name, monsterPortrait):
-    health = 100 + 50*monsterTier
+
+    match armor:
+        case 'Light':
+            health = random.randint(30*monsterTier,50*monsterTier)
+        case 'Medium':
+            health = random.randint(50*monsterTier,70*monsterTier)
+        case 'Heavy':
+            health = random.randint(70*monsterTier,100*monsterTier)
+    match speed:
+        case 'Slow':
+            damage = random.randint(3*monsterTier,5*monsterTier)
+        case 'Average':
+            damage = random.randint(5*monsterTier,7*monsterTier)
+        case 'Quick':
+            damage = random.randint(7*monsterTier,10*monsterTier)
     inventoryLoot = []
 
     for x in range(monsterTier):
-        if random.randInt(0,2) == 2:
-            inventoryLoot.append(Item(random.randInt(0,2),random.randInt(1,4)))
-    Player.gold+=10
+        if random.randint(0,2) == 2:
+            inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
+
     # typeNumber 0-2, lootTier 1-4
+    for i in range (10):
+        k = gencheck(x, y)
+        enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
+    aiimport = aienemygen('Fat enemy')
+    name = aiimport[0]
+    speed = aiimport[1]
+    armor = aiimport[2]
+    description = aiimport[3]
+    x= random.randint (0,RECT_WIDTH)
+    y= random.randint (0,RECT_HEIGHT)
 
-    Enemy(health, name, inventoryLoot, monsterPortrait)
-    Enemy.x = x
-    Enemy.y = y
 
-def enemygen(count,x,y):
-    while count > 0:
-        t = random.randint(0,x)
-        r = random.randint(0,y)
-        if gencheck(t,y):
-            tier = floor
-            populateEnemy(tier, t,y)
-            count -= 1
 
+    match armor:
+        case 'Light':
+            health = random.randint(30*monsterTier,50*monsterTier)
+        case 'Medium':
+            health = random.randint(50*monsterTier,70*monsterTier)
+        case 'Heavy':
+            health = random.randint(70*monsterTier,100*monsterTier)
+    match speed:
+        case 'Slow':
+            damage = random.randint(3*monsterTier,5*monsterTier)
+        case 'Average':
+            damage = random.randint(5*monsterTier,7*monsterTier)
+        case 'Quick':
+            damage = random.randint(7*monsterTier,10*monsterTier)
+    inventoryLoot = []
+
+    for x in range(monsterTier):
+        if random.randint(0,2) == 2:
+            inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
+
+    # typeNumber 0-2, lootTier 1-4
+    for i in range (10):
+        k = gencheck(x, y)
+        enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
+    aiimport = aienemygen('quick enemy')
+    name = aiimport[0]
+    speed = aiimport[1]
+    armor = aiimport[2]
+    description = aiimport[3]
+    x= random.randint (0,RECT_WIDTH)
+    y= random.randint (0,RECT_HEIGHT)
+
+
+
+    match armor:
+        case 'Light':
+            health = random.randint(30*monsterTier,50*monsterTier)
+        case 'Medium':
+            health = random.randint(50*monsterTier,70*monsterTier)
+        case 'Heavy':
+            health = random.randint(70*monsterTier,100*monsterTier)
+    match speed:
+        case 'Slow':
+            damage = random.randint(3*monsterTier,5*monsterTier)
+        case 'Average':
+            damage = random.randint(5*monsterTier,7*monsterTier)
+        case 'Quick':
+            damage = random.randint(7*monsterTier,10*monsterTier)
+    inventoryLoot = []
+
+    for x in range(monsterTier):
+        if random.randint(0,2) == 2:
+            inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
+
+    # typeNumber 0-2, lootTier 1-4
+    for i in range (10):
+        k = gencheck(x, y)
+        enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
+    print(enemies)
+    print(enemies[2].name)
+
+
+letterList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
+
+
+def mapgen(height, width):
+    global map
+    map = makemaze(height, width)
+    populateEnemy(1)
+
+
+FRAMERATE = 120
+RECT_WIDTH = 50
+RECT_HEIGHT = 50
+WIDTH = 700
+HEIGHT = 700
 
 
 def lootgen():
     print("lootgen")
-def mapgen():
-    height = 10
-    width = 10
-    return makemaze(height, width)
 
-
-maze = mapgen()
-print ( maze)
+print(map)
 
 
 
@@ -389,11 +564,34 @@ letterList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "
 
 gap = 1
 sqWidth = 30
-width = mapgen().width
-height = mapgen().height
-surface = pygame.display.set_mode((width,height))
+
+try:
+    width = mapgen().width
+    height = mapgen().height
+    surface = pygame.display.set_mode((width, height))
+except:
+    print("Error lines 449-451")
+
 
 typeList = ["sword","dagger","magicStaff"]
+
+item0 = Item(999,0)
+item1 = Item(999,0)
+item2 = Item(999,0)
+item3 = Item(999,0)
+item4 = Item(999,0)
+item5 = Item(999,0)
+item6 = Item(999,0)
+item7 = Item(999,0)
+item8 = Item(999,0)
+item9 = Item(999,0)
+
+theOG = Player()
+
+theOG.inventory.append(Item(1,1))
+theOG.name = input("Character Name: ")
+
+print("Hello there, general " + theOG.name + ". \nYou have been stranded in a labyrinth, and the only way is down. \nNo use in staying here.")
 
 
 

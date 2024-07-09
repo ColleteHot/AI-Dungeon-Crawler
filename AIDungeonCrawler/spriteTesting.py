@@ -1,5 +1,5 @@
 #! python 3
-# The hell are YOU doing in here?
+# Sprite Implementation for the AI Dungeon Crawler, Currently Non-functional
 import pygame, sys
 
 class Block(pygame.sprite.Sprite):
