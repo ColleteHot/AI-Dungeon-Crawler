@@ -268,11 +268,11 @@ HEIGHT = 700
 mapgen(MAP_WIDTH, MAP_HEIGHT)
 
 wall = pygame.image.load('wall.jpg')
-hero = pygame.image.load('hero.jpg')
+hero = pygame.image.load('nydenstuff/hero.jpg')
 floor = pygame.image.load('stonefloor.jpg')
-#hero_img = imagegen.generate("Create an image of a knight hero with a sword and shield")
-#wall_img = imagegen.generate("Create an image of a brick wall texture")
-#floor_img = imagegen.generate("Create an image of a stone floor texture")
+#hero = imagegen.generate("Create an image of a knight hero with a sword and shield")
+#wall = imagegen.generate("Create an image of a brick wall texture")
+#floor = imagegen.generate("Create an image of a stone floor texture")
 wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
@@ -313,6 +313,7 @@ def within_cam_range(x, y):
     sidey = RECT_HEIGHT // 2
     return (camX - sidex <= x <= camX + sidex) and (camY - sidey <= y <= camY + sidey)
 
+
 def draw_pixels(arr):
     width_ratio = (WIDTH // RECT_WIDTH)
     height_ratio = (HEIGHT // RECT_HEIGHT)
@@ -344,54 +345,55 @@ def draw_images(arr):
 
 zoomout = False
 
-while running:
-    screen.fill(BLACK)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_d:
-                if map[playerY][playerX + 1] == 'c' and not zoomout:
-                    playerX += 1
-                    if camX - playerX < 0:
-                        camX += 1
-            if event.key == pygame.K_a:
-                if map[playerY][playerX - 1] == 'c' and not zoomout:
-                    playerX -= 1
-                    if camX - playerX > 0:
-                        camX -= 1
-            if event.key == pygame.K_w:
-                if map[playerY - 1][playerX] == 'c' and not zoomout:
-                    playerY -= 1
-                    if camY - playerY > 0:
-                        camY -= 1
-            if event.key == pygame.K_s:
-                if map[playerY + 1][playerX] == 'c' and not zoomout:
-                    playerY += 1
-                    if camY - playerY < 0:
-                        camY += 1
-            if event.key == pygame.K_e:
-                zoomout = not zoomout
-                if zoomout:
-                    RECT_HEIGHT = MAP_HEIGHT
-                    RECT_WIDTH = MAP_WIDTH
-                    camX = RECT_WIDTH // 2
-                    camY = RECT_HEIGHT // 2
-                    wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                else:
-                    RECT_HEIGHT = 7
-                    RECT_WIDTH = 7
-                    camX = playerX
-                    camY = playerY
-                    wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-                    floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
-    #draw_pixels(map)
-    sizeX = RECT_WIDTH // 2
-    sizeY = RECT_HEIGHT // 2
-    draw_images(map)
-    screen.blit(hero_img, ((playerX - camX + sizeX) * (WIDTH // RECT_WIDTH), (playerY - camY + sizeY) * (HEIGHT // RECT_HEIGHT)))
-    pygame.display.flip()
-    clock.tick(FRAMERATE)
+if __name__ == '__main__':
+    while running:
+        screen.fill(BLACK)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_d:
+                    if map[playerY][playerX + 1] == 'c' and not zoomout:
+                        playerX += 1
+                        if camX - playerX < 0:
+                            camX += 1
+                if event.key == pygame.K_a:
+                    if map[playerY][playerX - 1] == 'c' and not zoomout:
+                        playerX -= 1
+                        if camX - playerX > 0:
+                            camX -= 1
+                if event.key == pygame.K_w:
+                    if map[playerY - 1][playerX] == 'c' and not zoomout:
+                        playerY -= 1
+                        if camY - playerY > 0:
+                            camY -= 1
+                if event.key == pygame.K_s:
+                    if map[playerY + 1][playerX] == 'c' and not zoomout:
+                        playerY += 1
+                        if camY - playerY < 0:
+                            camY += 1
+                if event.key == pygame.K_e:
+                    zoomout = not zoomout
+                    if zoomout:
+                        RECT_HEIGHT = MAP_HEIGHT
+                        RECT_WIDTH = MAP_WIDTH
+                        camX = RECT_WIDTH // 2
+                        camY = RECT_HEIGHT // 2
+                        wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                    else:
+                        RECT_HEIGHT = 7
+                        RECT_WIDTH = 7
+                        camX = playerX
+                        camY = playerY
+                        wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        floor_img = pygame.transform.scale(floor, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+        #draw_pixels(map)
+        sizeX = RECT_WIDTH // 2
+        sizeY = RECT_HEIGHT // 2
+        draw_images(map)
+        screen.blit(hero_img, ((playerX - camX + sizeX) * (WIDTH // RECT_WIDTH), (playerY - camY + sizeY) * (HEIGHT // RECT_HEIGHT)))
+        pygame.display.flip()
+        clock.tick(FRAMERATE)

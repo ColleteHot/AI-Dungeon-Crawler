@@ -1,7 +1,7 @@
 import pygame
 import random
 import copy
-import imagegen
+
 
 def makemaze(height, width):
     def printMaze(maze):
@@ -265,7 +265,7 @@ HEIGHT = 720
 
 mapgen(RECT_HEIGHT, RECT_WIDTH)
 
-wall_img = pygame.image.load('wall.jpg')
+wall_img = pygame.image.load('../wall.jpg')
 hero_img = pygame.image.load('hero.jpg')
 #hero_img = imagegen.generate("Create an image of a knight hero with a sword and shield")
 #wall_img = imagegen.generate("Create an image of a brick wall texture")

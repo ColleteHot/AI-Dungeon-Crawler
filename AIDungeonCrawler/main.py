@@ -1,11 +1,20 @@
 #! python 3
-import pygame, sys, random, time, numpy as np, musicTesting as mt
+import pygame, random, nydentest2, musicTesting as mt, PIL, imagegen
 from openai import OpenAI
 global floor
 client = OpenAI(
-    api_key = "sk-proj-MfQUU6kDUqNSxpmi7q9ET3BlbkFJbM27VwUuRHqM4qi2ePKh"
+    api_key = "sk-proj-PGorgZ2KBR9sN6qYqCiKT3BlbkFJ9xf8PYc7MWvBio7XlaWF"
 )
 enemies = []
+
+# Sound Files Here
+walk = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\SingleGravelStepMC.wav')
+menu = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\MenuSound.wav')
+backMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\backMusic(Temp).mp3'
+battleMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\BattleTheme.wav'
+gameOver = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\gameOver.mp3')
+mt.musicPlay(backMusic)
+pygame.mixer.music.set_volume(.3)
 
 floor = 1
 class Player:
@@ -22,6 +31,8 @@ class Player:
         self.gold = 0
         self.mana = 100
         self.name = ""
+        self.spellbook = []
+        self.maxMana = 100
 
 
 class Enemy:
@@ -29,35 +40,45 @@ class Enemy:
         self.health = health
         self.name = name
         self.inventoryLoot = []
-        self.x = x
-        self.y = y
+        self.x = y
+        self.y = x
         self.icon = (str(x) + ","+str(y))
         self.color = (250,0,0)
         self.damage = damage
         self.description = description
+        self.status = "none"
 #         use these for reference:
 #         populateEnemy()
 #         enemyAi()
+
+class Spell:
+    def __init__(self,name,manaCost,damage,statusEffect,healing):
+        self.statusEffect = "none"
+        self.name = "insertNameHere"
+        self.damage = 0
+        self.manaCost = 10
+        self.healing = 0
 
 class Item:
     def __init__(self, typeNumber, lootTier):
         self.name = ""
         self.type = typeList[typeNumber]
-        self.strength
+        self.strength = 0
         self.element = "none"
+        self.baseDamage = 0
 
         if lootTier == 1:
-            self.strength = random.randInt(0,5)
+            self.strength = random.randint(0,5)
         elif lootTier == 2:
-            self.strength = random.randInt(4,9)
+            self.strength = random.randint(4,9)
         elif lootTier == 3:
-            self.strength = random.randInt(8,13)
+            self.strength = random.randint(8,13)
         elif lootTier == 4:
-            self.strength = random.randInt(12,17)
+            self.strength = random.randint(12,17)
         else:
             self.strength = 0
 
-        if typeNumber == 999:
+        if typeNumber == 10:
             self.baseDamage = 0
             self.name = "placeholderItem"
         if typeList[typeNumber] == "sword":
@@ -77,12 +98,12 @@ class Item:
         elif typeList[typeNumber] == "magicStaff":
             self.baseDamage = 50
 
-            elementsList = ["","Fireball ","Tidal ","Fissure ","Whirlwind ","Void "]
+            elementsList = ["","Ember ","Tidal ","Fissure ","Whirlwind ","Void "]
 
             if lootTier == 1:
                 element = elementsList[0]
             elif lootTier >= 2 and lootTier < 4:
-                element = elementsList[random.randInt(1,4)]
+                element = elementsList[random.randint(1,4)]
             elif lootTier == 4:
                 element = elementsList[5]
             else:
@@ -103,8 +124,12 @@ class Item:
     #isn't this term used elsewhere?
 
 def combat(bumpedIntoEnemy):
+    hasfought = False
     dukingItOut = True
     print("You have entered combat.")
+    pygame.mixer_music.stop()
+    pygame.mixer.Sound.stop(walk)
+    mt.musicPlay(battleMusic)
     while dukingItOut:
         print(f"""
     {theOG.name}                     {bumpedIntoEnemy.name}
@@ -118,16 +143,60 @@ def combat(bumpedIntoEnemy):
         theChoice = input().capitalize().strip()
         if theChoice == "I":
             for i in range(len(theOG.inventory)):
-                print((i+1) + ". " + theOG.inventory[i].name)
-            theSubChoice = int(input("Choose your number: "))
-            print("You attack with your "+theOG.inventory[theSubChoice-1].name+" dealing "+theOG.inventory[theSubChoice-1].damage+" damage!")
+                print(str(i+1) + ". " + str(theOG.inventory[i].name))
+            theSubChoice = 0
+            while theSubChoice not in [1,2,3,4,5,6,7,8,9,10]:
+                B = input("Choose a number or choose x to go back: ").capitalize().strip()
+
+                if B == "X":
+                    print("")
+                elif int(B) not in [1,2,3,4,5,6,7,8,9,10] and B != "X":
+                    print("Not a valid selection, try again.")
+                else:
+                    hasfought = True
+                    bumpedIntoEnemy.health -= theOG.inventory[theSubChoice-1].d
+                    print("You attack with your "+theOG.inventory[theSubChoice-1].name+" dealing "+str(theOG.inventory[theSubChoice-1].damage)+" damage!")
+                    bumpedIntoEnemy.health -= theOG.inventory[theSubChoice-1].damage
+
         elif theChoice == "S":
             for i in range(len(theOG.spellbook)):
-                print((i + 1) + ". " + theOG.inventory[i].name)
-            theSubChoice = int(input("Choose your number: "))
-            print("You cast "++"")
+                print(str(i + 1) + ". " + theOG.spellbook[i].name + "," + str(theOG.spellbook[i].manaCost) + " mana")
+            theSubChoice = 0
+            while theSubChoice not in [1,2,3,4,5,6]:
+                B = input("Choose a number or choose x to go back: ").capitalize().strip()
+                theSubChoice = int(B)
+                if theSubChoice not in [1,2,3,4,5,6] and B != "X":
+                    print("Not a valid selection, try again.")
+                elif B == "X":
+                    break
+                elif theOG.mana < theOG.spellbook[theSubChoice-1].manaCost:
+                    print("Not enough mana, try again.")
+                else:
+                    hasfought = True
+                    theOG.mana -= theOG.spellbook[theSubChoice-1].manaCost
+                    bumpedIntoEnemy.health -= theOG.spellbook[theSubChoice-1].damage
+                    print("You cast "+theOG.spellbook[theSubChoice-1].name+".")
+                    print("The " + bumpedIntoEnemy.name + " takes " + str(theOG.spellbook[theSubChoice-1].damage) + "damage.")
+                    if theOG.spellbook[theSubChoice-1].statusEffect != "none":
+                        print("The " + bumpedIntoEnemy.name + " is now " + str(theOG.spellbook[theSubChoice-1].statusEffect) + ".")
+                    if theOG.spellbook[theSubChoice-1].healing > 0:
+                        theOG.health += theOG.spellbook[theSubChoice-1].healing
+                        print("Your health has increased by " + theOG.spellbook[theSubChoice-1].healing + "points")
+                    if theOG.health <= 0:
+                        dukingItOut = False
+                    if bumpedIntoEnemy <= 0:
+                        dukingItOut = False
+        if hasfought and dukingItOut:
+            theOG.health -= bumpedIntoEnemy.damage
+            print("The " +bumpedIntoEnemy.name+ " hits you for " +bumpedIntoEnemy.damage+ " damage!")
+            # monster fights back
         else:
-            dukingItOut = True
+            print("")
+    if not dukingItOut:
+        theOG.mana = theOG.maxMana#right here
+        pygame.mixer_music.stop()
+        mt.musicPlay(backMusic)
+
 
 def makemaze(height, width):
     def printMaze(maze):
@@ -368,6 +437,7 @@ def makemaze(height, width):
 
     # Print final maze
     return maze
+
 def aienemygen(lol):
 
 
@@ -388,44 +458,55 @@ def aienemygen(lol):
     k = l.find("Description: ")
     c = 0
     name = ''
-    for i in range(6,k-2):
-        name = name + l[i]
-    final = [name]
+    if "\n\n" in l:
+        for i in range(6,k-2):
+            name = name + l[i]
+        final = [name]
 
-    match l[len(l)-1]:
-        case "k":
-            final.append("Quick")
-            c = 5
-        case'e':
-            final.append("Average")
-            c = 7
-        case 'w':
-            final.append("Slow")
-            c = 4
+        match l[len(l)-1]:
+            case "k":
+                final.append("Quick")
+                c = 5
+            case'e':
+                final.append("Average")
+                c = 7
+            case 'w':
+                final.append("Slow")
+                c = 4
 
-    match l[len(l)-1-c-9]:
+        match l[len(l)-1-c-9]:
 
-        case 'y':
-            final.append("Heavy")
-            c += 5
-        case 'm':
-            final.append("Medium")
-            c = c + 6
-        case 't':
-            final.append("Light")
-            c = c + 5
+            case 'y':
+                final.append("Heavy")
+                c += 5
+            case 'm':
+                final.append("Medium")
+                c = c + 6
+            case 't':
+                final.append("Light")
+                c = c + 5
 
-    description = ''
-    for i in range(k, (len(l)-c-17)):
-        description = description + l[i]
+        description = ''
+        for i in range(k, (len(l)-c-17)):
+            description = description + l[i]
 
-    final.append(description)
-    return final
+        final.append(description)
+        print(final)
+        if len(final) < 4:
+            print("fixed bc Xavier is a genius")
+            return aienemygen(lol)
+        return final
+    else:
+        print("fixed bc Xavier is a genius")
+        return aienemygen(lol)
+
+
+
 
 def gencheck(x,y):
     while map[x][y] != "c":
-        x = random.randint(0,RECT_WIDTH-1)
-        y = random.randint(0,RECT_HEIGHT-1)
+        x = random.randint(1,MAP_WIDTH-1)
+        y = random.randint(1,MAP_HEIGHT-1)
     map[x][y] = 'E'
     return [x,y]
 def populateEnemy(monsterTier):
@@ -434,8 +515,8 @@ def populateEnemy(monsterTier):
     speed = aiimport[1]
     armor = aiimport[2]
     description = aiimport[3]
-    x= random.randint (0,RECT_WIDTH)
-    y= random.randint (0,RECT_HEIGHT)
+    x = random.randint (0,MAP_WIDTH)
+    y = random.randint (0,MAP_HEIGHT)
 
 
 
@@ -460,16 +541,19 @@ def populateEnemy(monsterTier):
             inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
 
     # typeNumber 0-2, lootTier 1-4
-    for i in range (10):
+    for i in range(10):
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     aiimport = aienemygen('Fat enemy')
     name = aiimport[0]
     speed = aiimport[1]
     armor = aiimport[2]
-    description = aiimport[3]
-    x= random.randint (0,RECT_WIDTH)
-    y= random.randint (0,RECT_HEIGHT)
+    try:
+        description = aiimport[3]
+    except IndexError:
+        print("IndexError aiimport[3]")
+    x= random.randint (1,RECT_WIDTH)
+    y= random.randint (1,RECT_HEIGHT)
 
 
 
@@ -491,19 +575,23 @@ def populateEnemy(monsterTier):
 
     for x in range(monsterTier):
         if random.randint(0,2) == 2:
-            inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
+            try:
+                inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
+            except:
+                print("error in inventoryLoot.append")
 
     # typeNumber 0-2, lootTier 1-4
     for i in range (10):
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     aiimport = aienemygen('quick enemy')
+
     name = aiimport[0]
     speed = aiimport[1]
     armor = aiimport[2]
     description = aiimport[3]
-    x= random.randint (0,RECT_WIDTH)
-    y= random.randint (0,RECT_HEIGHT)
+    x= random.randint (1,RECT_WIDTH)
+    y= random.randint (1,RECT_HEIGHT)
 
 
 
@@ -541,14 +629,8 @@ letterList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "
 def mapgen(height, width):
     global map
     map = makemaze(height, width)
+
     populateEnemy(1)
-
-
-FRAMERATE = 120
-RECT_WIDTH = 50
-RECT_HEIGHT = 50
-WIDTH = 700
-HEIGHT = 700
 
 
 def lootgen():
@@ -565,35 +647,173 @@ letterList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "
 gap = 1
 sqWidth = 30
 
-try:
-    width = mapgen().width
-    height = mapgen().height
-    surface = pygame.display.set_mode((width, height))
-except:
-    print("Error lines 449-451")
+#width = 40
+#height = 40
 
+dukingItOut = False
 
-typeList = ["sword","dagger","magicStaff"]
+typeList = ["sword","dagger","magicStaff","","","","","","","","",""]
 
-item0 = Item(999,0)
-item1 = Item(999,0)
-item2 = Item(999,0)
-item3 = Item(999,0)
-item4 = Item(999,0)
-item5 = Item(999,0)
-item6 = Item(999,0)
-item7 = Item(999,0)
-item8 = Item(999,0)
-item9 = Item(999,0)
+placeholder = 2
+placeholder2 = 1
+item0 = Item(placeholder,placeholder2)
+item1 = Item(placeholder,placeholder2)
+item2 = Item(placeholder,placeholder2)
+item3 = Item(placeholder,placeholder2)
+item4 = Item(placeholder,placeholder2)
+item5 = Item(placeholder,placeholder2)
+item6 = Item(placeholder,placeholder2)
+item7 = Item(placeholder,placeholder2)
+item8 = Item(placeholder,placeholder2)
+item9 = Item(placeholder,placeholder2)
 
 theOG = Player()
 
 theOG.inventory.append(Item(1,1))
+
+theOG.spellbook.append(Spell("Lesser Healing",100,0,"none", 75))
+theOG.spellbook.append(Spell("Greater Healing",200,0,"none",300))
+theOG.spellbook.append(Spell("Icicle",75,20,"frozen",0))
+theOG.spellbook.append(Spell("Fireball",150,100,"burning",0))
+theOG.spellbook.append(Spell("Lightning Strike",250,600,"none",0))
+theOG.spellbook.append(Spell("Earthquake",400,1000,"none",0))
+
 theOG.name = input("Character Name: ")
 
 print("Hello there, general " + theOG.name + ". \nYou have been stranded in a labyrinth, and the only way is down. \nNo use in staying here.")
 
 
+# Epiic gaymer fortnite poopy doopy hehe
+def check_enemy(x, y):
+    for e in enemies:
+        if x == e.x and y == e.y:
+            return e
 
+# ----nyden stupid code for graphics begin---- #
+FRAMERATE = 120
+RECT_WIDTH = 7
+RECT_HEIGHT = 7
+MAP_WIDTH = 50
+MAP_HEIGHT = 50
+WIDTH = 700
+HEIGHT = 700
+
+mapgen(MAP_WIDTH, MAP_HEIGHT)
+
+wall = pygame.image.load('wall.jpg')
+hero = pygame.image.load('hero.jpg')
+floortile = pygame.image.load('stonefloor.jpg')
+enemy = pygame.image.load('dragon.jpg')
+#hero = imagegen.generate("Create an image of a knight hero with a sword and shield")
+#wall = imagegen.generate("Create an image of a brick wall texture")
+#floor = imagegen.generate("Create an image of a stone floor texture")
+#dragon = imagegen.generate("Create an image of a fearsom dragon")
+wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+floor_img = pygame.transform.scale(floortile, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+enemy_img = pygame.transform.scale(enemy, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+
+pygame.init()
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption('AI Dungeon Crawler')
+clock = pygame.time.Clock()
+running = True
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+GRAY = (50, 50, 50)
+BLUE = (0, 0, 200)
+
+playerX = nydentest2.find_top_empty(map)
+playerY = 0
+camX = RECT_WIDTH // 2
+camY = RECT_HEIGHT // 2
+
+
+def within_cam_range(x, y):
+    sidex = RECT_WIDTH // 2
+    sidey = RECT_HEIGHT // 2
+    return (camX - sidex <= x <= camX + sidex) and (camY - sidey <= y <= camY + sidey)
+def draw_images(arr):
+    width_ratio = (WIDTH // RECT_WIDTH)
+    height_ratio = (HEIGHT // RECT_HEIGHT)
+    sizeX = RECT_WIDTH // 2
+    sizeY = RECT_HEIGHT // 2
+    for x in range(len(arr)):
+        for y in range(len(arr[x])):
+            if within_cam_range(y, x):
+                if arr[x][y] == 'w':
+                    screen.blit(wall_img, ((y - camX + sizeX) * width_ratio, (x - camY + sizeY) * height_ratio))
+                elif arr[x][y] == 'c' and not ((y == playerX) and (x == playerY)):
+                    screen.blit(floor_img, ((y - camX + sizeX) * width_ratio, (x - camY + sizeY) * height_ratio))
+
+zoomout = False
+
+while running:
+    screen.fill(BLACK)
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_d:
+                if map[playerY][playerX + 1] != 'w' and not zoomout and not dukingItOut:
+                    playerX += 1
+                    if camX - playerX < 0:
+                        camX += 1
+            if event.key == pygame.K_a:
+                if map[playerY][playerX - 1] != 'w' and not zoomout and not dukingItOut:
+                    playerX -= 1
+                    if camX - playerX > 0:
+                        camX -= 1
+            if event.key == pygame.K_w:
+                if map[playerY - 1][playerX] != 'w' and not zoomout and not dukingItOut:
+                    playerY -= 1
+                    if camY - playerY > 0:
+                        camY -= 1
+            if event.key == pygame.K_s:
+                if map[playerY + 1][playerX] != 'w' and not zoomout and not dukingItOut:
+                    playerY += 1
+                    if camY - playerY < 0:
+                        camY += 1
+            if event.key == pygame.K_e:
+                if not dukingItOut:
+                    zoomout = not zoomout
+                    if zoomout:
+                        RECT_HEIGHT = MAP_HEIGHT
+                        RECT_WIDTH = MAP_WIDTH
+                        camX = RECT_WIDTH // 2
+                        camY = RECT_HEIGHT // 2
+                        wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        floor_img = pygame.transform.scale(floortile, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        enemy_img = pygame.transform.scale(enemy, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                    else:
+                        RECT_HEIGHT = 7
+                        RECT_WIDTH = 7
+                        camX = playerX
+                        camY = playerY
+                        wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        floor_img = pygame.transform.scale(floortile, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+                        enemy_img = pygame.transform.scale(enemy, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+            for i in range(len(enemies)):
+                #print("PLayer X and Y: " + str(playerX) + ", " + str(playerY) + "; enemy X and Y:" + str(enemies[i].x) + ", " + str(enemies[i].y))
+                if enemies[i].y == playerX & enemies[i].x == playerY:
+                    print("enemy detected, ")
+                    combat(enemies[i])
+            #print("break")
+
+    # draw_pixels(map)
+    sizeX = RECT_WIDTH // 2
+    sizeY = RECT_HEIGHT // 2
+    draw_images(map)
+    for e in enemies:
+        screen.blit(enemy_img, ((e.x - camX + sizeX) * (WIDTH // RECT_WIDTH), (e.y - camY + sizeY) * (HEIGHT // RECT_HEIGHT)))
+    try:
+        screen.blit(hero_img,((playerX - camX + sizeX) * (WIDTH // RECT_WIDTH), (playerY - camY + sizeY) * (HEIGHT // RECT_HEIGHT)))
+    except:
+        print(playerX, camX, playerY, camY)
+    pygame.display.flip()
+    clock.tick(FRAMERATE)
 
 # NO SWEARING, CURSING, OR OTHER OBSCENITIES >:(
