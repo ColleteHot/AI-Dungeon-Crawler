@@ -1,5 +1,5 @@
 #! python 3
-import pygame, random, nydentest2, musicTesting as mt, PIL, imagegen
+import pygame, random, nydentest2, musicTesting as mt, PIL, imagegen, time, sys
 from openai import OpenAI
 global floor
 client = OpenAI(
@@ -8,13 +8,18 @@ client = OpenAI(
 enemies = []
 
 # Sound Files Here
-#walk = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\SingleGravelStepMC.wav')
-#menu = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\MenuSound.wav')
-#backMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\backMusic(Temp).mp3'
-#battleMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\BattleTheme.wav'
-#gameOver = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\gameOver.mp3')
-#mt.musicPlay(backMusic)
-#pygame.mixer.music.set_volume(.3)
+menu = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\MenuSound.wav')
+backMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\backMusic(Temp).mp3'
+battleMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\BattleTheme.wav'
+gameOver = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\gameOver.mp3')
+spellSFX = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\swordSlash.mp3'
+swordSlash = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\spellSFX.mp3'
+winSFX = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\winSFX.mp3'
+
+mt.musicPlay(backMusic)
+pygame.mixer.music.set_volume(.4)
+
+
 
 floor = 1
 class Player:
@@ -53,22 +58,22 @@ class Enemy:
 
 class Spell:
     def __init__(self,name,manaCost,damage,statusEffect,healing):
-        self.statusEffect = "none"
-        self.name = "insertNameHere"
-        self.damage = 0
-        self.manaCost = 10
-        self.healing = 0
+        self.statusEffect = statusEffect
+        self.name = name
+        self.damage = damage
+        self.manaCost = manaCost
+        self.healing = healing
 
 class Item:
     def __init__(self, typeNumber, lootTier):
         self.name = ""
         self.type = typeList[typeNumber]
-        self.strength = 0
+        self.strength = 1
         self.element = "none"
-        self.baseDamage = 0
+        self.baseDamage = 1
 
         if lootTier == 1:
-            self.strength = random.randint(0,5)
+            self.strength = random.randint(1,5)
         elif lootTier == 2:
             self.strength = random.randint(4,9)
         elif lootTier == 3:
@@ -76,10 +81,10 @@ class Item:
         elif lootTier == 4:
             self.strength = random.randint(12,17)
         else:
-            self.strength = 0
+            self.strength = 1
 
         if typeNumber == 10:
-            self.baseDamage = 0
+            self.baseDamage = 5
             self.name = "placeholderItem"
         if typeList[typeNumber] == "sword":
             self.baseDamage = 40
@@ -119,17 +124,41 @@ class Item:
 
 #         strength modifies attack damage of the sword, with strength 0 as a base of 100% damage, 1 as 110%, and so on
 
-#def mapEnemyAI():
+#def mapEnemyAI(enemy, map):
+ #   choice = random.randint(0,1)
+  #  rndmNum = random.randint(-1,1)
+#
+ #   if choice == 0:
+  #      if map[enemy.x + rndmNum][enemy.y] == 'c':
+   #         map[enemy.x][enemy.y] = 'c'
+    #        enemy.x += rndmNum
+#
+ #   else:
+  #      if map[enemy.x][enemy.y + rndmNum] == 'c':
+   #         map[enemy.x][enemy.y] = 'c'
+    #        enemy.y += rndmNum
 
-    #isn't this term used elsewhere?
+def prettyness(lol):
+    system_data = [
+        {"role": "system",
+         "content": "An adventurer is fighting an enemy. Write a description for an attack when prompted with the enemy name and description, the weapon used, and the damgage dealt."},
+        {"role": "user", "content": lol}
+    ]
 
-def combat(bumpedIntoEnemy):
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=system_data
+    )
+
+    assistant_response = response.choices[0].message.content
+    system_data.append({"role": "assistant", "content": assistant_response})
+    print(assistant_response)
+def combat(bumpedIntoEnemy, enemyValue):
     hasfought = False
     dukingItOut = True
     print("You have entered combat.")
-    #pygame.mixer_music.stop()
-    #pygame.mixer.Sound.stop(walk)
-    #mt.musicPlay(battleMusic)
+    pygame.mixer_music.stop()
+    mt.musicPlay(battleMusic)
     while dukingItOut:
         print(f"""
     {theOG.name}                     {bumpedIntoEnemy.name}
@@ -143,20 +172,31 @@ def combat(bumpedIntoEnemy):
         theChoice = input().capitalize().strip()
         if theChoice == "I":
             for i in range(len(theOG.inventory)):
-                print(str(i+1) + ". " + str(theOG.inventory[i].name))
+                print(str(i + 1) + ". " + theOG.inventory[i].name)
             theSubChoice = 0
             while theSubChoice not in [1,2,3,4,5,6,7,8,9,10]:
                 B = input("Choose a number or choose x to go back: ").capitalize().strip()
 
-                if B == "X":
-                    print("")
+                if B in ["",",","X"]:
+                    break
                 elif int(B) not in [1,2,3,4,5,6,7,8,9,10] and B != "X":
                     print("Not a valid selection, try again.")
                 else:
                     hasfought = True
-                    bumpedIntoEnemy.health -= theOG.inventory[theSubChoice-1].d
-                    print("You attack with your "+theOG.inventory[theSubChoice-1].name+" dealing "+str(theOG.inventory[theSubChoice-1].damage)+" damage!")
                     bumpedIntoEnemy.health -= theOG.inventory[theSubChoice-1].damage
+                    #print("You attack with your "+theOG.inventory[theSubChoice-1].name+" dealing "+str(theOG.inventory[theSubChoice-1].damage)+" damage!")
+                    print(prettyness('The hero strikes the' +bumpedIntoEnemy.name+ ' '+bumpedIntoEnemy.description+ 'with '+theOG.inventory[theSubChoice-1].name+" dealing "+str(theOG.inventory[theSubChoice-1].damage)))
+                    mt.soundPlay(swordSlash)
+                    if bumpedIntoEnemy.health <= 0:
+                        dukingItOut = False
+
+                        map[bumpedIntoEnemy.y][bumpedIntoEnemy.x] = 'c'
+                        enemies.pop(enemyValue) #enemyValue is enemy list number
+                        #print(f"enemy {enemyValue} should be killed")
+                        #print(enemyValue)
+                        #Map Enemie Picture Location Pop goes here
+
+                        break
 
         elif theChoice == "S":
             for i in range(len(theOG.spellbook)):
@@ -167,7 +207,7 @@ def combat(bumpedIntoEnemy):
                 theSubChoice = int(B)
                 if theSubChoice not in [1,2,3,4,5,6] and B != "X":
                     print("Not a valid selection, try again.")
-                elif B == "X":
+                elif B in ["",",","X"]:
                     break
                 elif theOG.mana < theOG.spellbook[theSubChoice-1].manaCost:
                     print("Not enough mana, try again.")
@@ -176,6 +216,7 @@ def combat(bumpedIntoEnemy):
                     theOG.mana -= theOG.spellbook[theSubChoice-1].manaCost
                     bumpedIntoEnemy.health -= theOG.spellbook[theSubChoice-1].damage
                     print("You cast "+theOG.spellbook[theSubChoice-1].name+".")
+                    mt.soundPlay(spellSFX)
                     print("The " + bumpedIntoEnemy.name + " takes " + str(theOG.spellbook[theSubChoice-1].damage) + "damage.")
                     if theOG.spellbook[theSubChoice-1].statusEffect != "none":
                         print("The " + bumpedIntoEnemy.name + " is now " + str(theOG.spellbook[theSubChoice-1].statusEffect) + ".")
@@ -184,18 +225,40 @@ def combat(bumpedIntoEnemy):
                         print("Your health has increased by " + theOG.spellbook[theSubChoice-1].healing + "points")
                     if theOG.health <= 0:
                         dukingItOut = False
-                    if bumpedIntoEnemy <= 0:
+                        break
+                    if bumpedIntoEnemy.health <= 0:
                         dukingItOut = False
+
+                        map[bumpedIntoEnemy.y][bumpedIntoEnemy.x] = 'c'
+                        enemies.pop(enemyValue) #enemyValue is enemy list number
+                        #print(f"enemy {enemyValue} should be killed")
+                        #print(enemyValue)
+                        #Map Enemie Picture Location Pop goes here
+
+                        break
+                    break
+
         if hasfought and dukingItOut:
             theOG.health -= bumpedIntoEnemy.damage
-            print("The " +bumpedIntoEnemy.name+ " hits you for " +bumpedIntoEnemy.damage+ " damage!")
+            print("The " +bumpedIntoEnemy.name+ " hits you for " + str(bumpedIntoEnemy.damage) + " damage!")
             # monster fights back
+            if theOG.health <= 0:
+                dukingItOut = False
+                break
+            if bumpedIntoEnemy.health <= 0:
+                dukingItOut = False
+                break
         else:
-            print("")
+            break
     if not dukingItOut:
         theOG.mana = theOG.maxMana#right here
-        #pygame.mixer_music.stop()
-        #mt.musicPlay(backMusic)
+        pygame.mixer_music.stop()
+        if theOG.health < 1:
+            mt.soundPlay(gameOver)
+        else:
+            print('You Won the Battle! \n+1 Swags Given!')
+            mt.musicPlay(backMusic)
+
 
 
 def makemaze(height, width):
@@ -515,8 +578,8 @@ def populateEnemy(monsterTier):
     speed = aiimport[1]
     armor = aiimport[2]
     description = aiimport[3]
-    x = random.randint (1,MAP_WIDTH)
-    y = random.randint (1,MAP_HEIGHT)
+    x = random.randint (2,MAP_WIDTH-2)
+    y = random.randint (2,MAP_HEIGHT-2)
 
 
 
@@ -541,7 +604,9 @@ def populateEnemy(monsterTier):
             inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
 
     # typeNumber 0-2, lootTier 1-4
-    for i in range(0):
+    for i in range(10):
+        x = random.randint(2, MAP_WIDTH-2)
+        y = random.randint(2, MAP_HEIGHT-2)
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     aiimport = aienemygen('Fat enemy')
@@ -552,8 +617,8 @@ def populateEnemy(monsterTier):
         description = aiimport[3]
     except IndexError:
         print("IndexError aiimport[3]")
-    x= random.randint (1,RECT_WIDTH)
-    y= random.randint (1,RECT_HEIGHT)
+    x= random.randint (2,RECT_WIDTH-2)
+    y= random.randint (2,RECT_HEIGHT-2)
 
 
 
@@ -581,7 +646,7 @@ def populateEnemy(monsterTier):
                 print("error in inventoryLoot.append")
 
     # typeNumber 0-2, lootTier 1-4
-    for i in range (1):
+    for i in range (10):
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     aiimport = aienemygen('quick enemy')
@@ -590,8 +655,8 @@ def populateEnemy(monsterTier):
     speed = aiimport[1]
     armor = aiimport[2]
     description = aiimport[3]
-    x= random.randint (1,RECT_WIDTH)
-    y= random.randint (1,RECT_HEIGHT)
+    x= random.randint (2,RECT_WIDTH-2)
+    y= random.randint (2,RECT_HEIGHT-2)
 
 
 
@@ -616,7 +681,7 @@ def populateEnemy(monsterTier):
             inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
 
     # typeNumber 0-2, lootTier 1-4
-    for i in range (0):
+    for i in range (10):
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     print(enemies)
@@ -670,21 +735,23 @@ item9 = Item(placeholder,placeholder2)
 
 theOG = Player()
 
-theOG.inventory.append(Item(1,1))
+# theOG.inventory.append(Item(1,1))
 
-theOG.spellbook.append(Spell("Lesser Healing",100,0,"none", 75))
-theOG.spellbook.append(Spell("Greater Healing",200,0,"none",300))
-theOG.spellbook.append(Spell("Icicle",75,20,"frozen",0))
-theOG.spellbook.append(Spell("Fireball",150,100,"burning",0))
-theOG.spellbook.append(Spell("Lightning Strike",250,600,"none",0))
-theOG.spellbook.append(Spell("Earthquake",400,1000,"none",0))
+item0 = Item(1,1)
+
+theOG.spellbook.append(Spell("Lesser Healing",50,0,"none", 75))
+theOG.spellbook.append(Spell("Greater Healing",70,0,"none",300))
+theOG.spellbook.append(Spell("Icicle",25,20,"frozen",0))
+theOG.spellbook.append(Spell("Fireball",75,100,"burning",0))
+theOG.spellbook.append(Spell("Lightning Strike",75,600,"none",0))
+theOG.spellbook.append(Spell("Earthquake",100,1000,"none",0))
 
 theOG.name = input("Character Name: ")
 
 print("Hello there, general " + theOG.name + ". \nYou have been stranded in a labyrinth, and the only way is down. \nNo use in staying here.")
 
 
-# Epiic gaymer fortnite poopy doopy hehe
+# Epiic gaymer fortnite poopy doopy hehe here
 def check_enemy(x, y):
     for e in enemies:
         if x == e.x and y == e.y:
@@ -698,17 +765,20 @@ MAP_WIDTH = 50
 MAP_HEIGHT = 50
 WIDTH = 700
 HEIGHT = 700
+testing = False
 
 mapgen(MAP_WIDTH, MAP_HEIGHT)
 
-wall = pygame.image.load('wall.jpg')
-hero = pygame.image.load('hero.jpg')
-floortile = pygame.image.load('stonefloor.jpg')
-enemy = pygame.image.load('dragon.jpg')
-#hero = imagegen.generate("Create an image of a knight hero with a sword and shield")
-#wall = imagegen.generate("Create an image of a brick wall texture")
-#floor = imagegen.generate("Create an image of a stone floor texture")
-#dragon = imagegen.generate("Create an image of a fearsom dragon")
+if testing:
+    wall = pygame.image.load('wall.jpg')
+    hero = pygame.image.load('hero.jpg')
+    floortile = pygame.image.load('stonefloor.jpg')
+    enemy = pygame.image.load('dragon.jpg')
+else:
+    hero = imagegen.generate("Create an image of a peanut man knight hero")
+    wall = imagegen.generate("Create an image of a brick wall texture")
+    floortile = imagegen.generate("Create an image of a stone floor texture")
+    enemy = imagegen.generate("Create an image of a fearsom dragon")
 wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 floor_img = pygame.transform.scale(floortile, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
@@ -762,20 +832,30 @@ while running:
                     if camX - playerX < 0:
                         camX += 1
             if event.key == pygame.K_a:
-                if map[playerY][playerX - 1] != 'w' and not zoomout and not dukingItOut:
-                    playerX -= 1
-                    if camX - playerX > 0:
-                        camX -= 1
+                try:
+                    if map[playerY][playerX - 1] != 'w' and not zoomout and not dukingItOut:
+                        playerX -= 1
+                        if camX - playerX > 0:
+                            camX -= 1
+                except:
+                    print('You Win!')
+                    mt.soundPlay(winSFX)
             if event.key == pygame.K_w:
                 if map[playerY - 1][playerX] != 'w' and not zoomout and not dukingItOut:
                     playerY -= 1
                     if camY - playerY > 0:
                         camY -= 1
             if event.key == pygame.K_s:
-                if map[playerY + 1][playerX] != 'w' and not zoomout and not dukingItOut:
-                    playerY += 1
-                    if camY - playerY < 0:
-                        camY += 1
+                try:
+                    if map[playerY + 1][playerX] != 'w' and not zoomout and not dukingItOut:
+                        playerY += 1
+                        if camY - playerY < 0:
+                            camY += 1
+                except:
+                    print('You have escaped the Dungeon!')
+                    mt.soundPlay(winSFX)
+                    time.sleep(4)
+                    sys.exit()
             if event.key == pygame.K_e:
                 if not dukingItOut:
                     zoomout = not zoomout
@@ -797,16 +877,24 @@ while running:
                         hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
                         floor_img = pygame.transform.scale(floortile, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
                         enemy_img = pygame.transform.scale(enemy, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
+            if event.key == pygame.K_q:
+                for i in range(len(enemies)):
+                    print(f"Enemy{i}: {enemies[i].x, enemies[i].y}")
             for i in range(len(enemies)):
-                #print("PLayer X and Y: " + str(playerX) + ", " + str(playerY) + "; enemy X and Y:" + str(enemies[i].x) + ", " + str(enemies[i].y))
-                if enemies[i].y == playerY and enemies[i].x == playerX:
-                    print("enemy detected, ")
+             #   mapEnemyAI(enemies[i], map)
+                try:
+                    if enemies[i].y == playerY and enemies[i].x == playerX:
+                        #print("enemy detected, ")
 
-                    combat(enemies[i])
+                        combat(enemies[i], i)
+                        break
+                    #print(enemies[i].x, enemies[i].y)
+                    #print(playerX, playerY)
+                except IndexError:
+                    print("nyden is a bad programmer")
+                    pass
 
-                print(enemies[i].x, enemies[i].y)
-                print(playerX, playerY)
-            #print("break")
+
 
     # draw_pixels(map)
     sizeX = RECT_WIDTH // 2
