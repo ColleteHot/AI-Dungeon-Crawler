@@ -944,4 +944,4 @@ img = Image.open(io.BytesIO(response.content))
 
 img.show()
 
-class Enemy(pygame.sprite.Sprite):
+#class Enemy(pygame.sprite.Sprite):
