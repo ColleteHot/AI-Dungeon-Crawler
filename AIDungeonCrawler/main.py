@@ -8,13 +8,13 @@ client = OpenAI(
 enemies = []
 
 # Sound Files Here
-walk = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\SingleGravelStepMC.wav')
-menu = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\MenuSound.wav')
-backMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\backMusic(Temp).mp3'
-battleMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\BattleTheme.wav'
-gameOver = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\gameOver.mp3')
-mt.musicPlay(backMusic)
-pygame.mixer.music.set_volume(.3)
+#walk = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\SingleGravelStepMC.wav')
+#menu = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\MenuSound.wav')
+#backMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\backMusic(Temp).mp3'
+#battleMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\BattleTheme.wav'
+#gameOver = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\gameOver.mp3')
+#mt.musicPlay(backMusic)
+#pygame.mixer.music.set_volume(.3)
 
 floor = 1
 class Player:
@@ -127,9 +127,9 @@ def combat(bumpedIntoEnemy):
     hasfought = False
     dukingItOut = True
     print("You have entered combat.")
-    pygame.mixer_music.stop()
-    pygame.mixer.Sound.stop(walk)
-    mt.musicPlay(battleMusic)
+    #pygame.mixer_music.stop()
+    #pygame.mixer.Sound.stop(walk)
+    #mt.musicPlay(battleMusic)
     while dukingItOut:
         print(f"""
     {theOG.name}                     {bumpedIntoEnemy.name}
@@ -194,8 +194,8 @@ def combat(bumpedIntoEnemy):
             print("")
     if not dukingItOut:
         theOG.mana = theOG.maxMana#right here
-        pygame.mixer_music.stop()
-        mt.musicPlay(backMusic)
+        #pygame.mixer_music.stop()
+        #mt.musicPlay(backMusic)
 
 
 def makemaze(height, width):
@@ -505,8 +505,8 @@ def aienemygen(lol):
 
 def gencheck(x,y):
     while map[x][y] != "c":
-        x = random.randint(1,MAP_WIDTH-1)
-        y = random.randint(1,MAP_HEIGHT-1)
+        x = random.randint(2,MAP_WIDTH-2)
+        y = random.randint(2,MAP_HEIGHT-2)
     map[x][y] = 'E'
     return [x,y]
 def populateEnemy(monsterTier):
@@ -515,8 +515,8 @@ def populateEnemy(monsterTier):
     speed = aiimport[1]
     armor = aiimport[2]
     description = aiimport[3]
-    x = random.randint (0,MAP_WIDTH)
-    y = random.randint (0,MAP_HEIGHT)
+    x = random.randint (1,MAP_WIDTH)
+    y = random.randint (1,MAP_HEIGHT)
 
 
 
@@ -541,7 +541,7 @@ def populateEnemy(monsterTier):
             inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
 
     # typeNumber 0-2, lootTier 1-4
-    for i in range(10):
+    for i in range(0):
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     aiimport = aienemygen('Fat enemy')
@@ -581,7 +581,7 @@ def populateEnemy(monsterTier):
                 print("error in inventoryLoot.append")
 
     # typeNumber 0-2, lootTier 1-4
-    for i in range (10):
+    for i in range (1):
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     aiimport = aienemygen('quick enemy')
@@ -616,11 +616,12 @@ def populateEnemy(monsterTier):
             inventoryLoot.append(Item(random.randint(0,2),random.randint(1,4)))
 
     # typeNumber 0-2, lootTier 1-4
-    for i in range (10):
+    for i in range (0):
         k = gencheck(x, y)
         enemies.append(Enemy(health, name, inventoryLoot, damage,k[0],k[1],description))
     print(enemies)
-    print(enemies[2].name)
+    print(enemies[0].name)
+    print(map)
 
 
 letterList = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z", "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z"]
@@ -798,9 +799,13 @@ while running:
                         enemy_img = pygame.transform.scale(enemy, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
             for i in range(len(enemies)):
                 #print("PLayer X and Y: " + str(playerX) + ", " + str(playerY) + "; enemy X and Y:" + str(enemies[i].x) + ", " + str(enemies[i].y))
-                if enemies[i].y == playerX & enemies[i].x == playerY:
+                if enemies[i].y == playerY and enemies[i].x == playerX:
                     print("enemy detected, ")
+
                     combat(enemies[i])
+
+                print(enemies[i].x, enemies[i].y)
+                print(playerX, playerY)
             #print("break")
 
     # draw_pixels(map)
