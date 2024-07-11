@@ -292,6 +292,8 @@ def find_top_empty(arr):
     for x in range(len(arr)):
         if arr[0][x] == 'c':
             return x
+        if arr[0][x] == 'E':
+            print ("lol found it")
 
 
 playerX = find_top_empty(map)
