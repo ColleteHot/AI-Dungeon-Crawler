@@ -510,6 +510,7 @@ def gencheck(x,y):
     map[x][y] = 'E'
     return [x,y]
 def populateEnemy(monsterTier):
+    global health
     aiimport = aienemygen('tiny enemy')
     name = aiimport[0]
     speed = aiimport[1]
@@ -701,14 +702,14 @@ HEIGHT = 700
 
 mapgen(MAP_WIDTH, MAP_HEIGHT)
 
-wall = pygame.image.load('wall.jpg')
-hero = pygame.image.load('hero.jpg')
-floortile = pygame.image.load('stonefloor.jpg')
-enemy = pygame.image.load('dragon.jpg')
-#hero = imagegen.generate("Create an image of a knight hero with a sword and shield")
-#wall = imagegen.generate("Create an image of a brick wall texture")
-#floor = imagegen.generate("Create an image of a stone floor texture")
-#dragon = imagegen.generate("Create an image of a fearsom dragon")
+#wall = pygame.image.load('wall.jpg')
+#hero = pygame.image.load('hero.jpg')
+#floortile = pygame.image.load('stonefloor.jpg')
+#enemy = pygame.image.load('dragon.jpg')
+hero = imagegen.generate("Create an image of a knight hero with a sword and shield")
+wall = imagegen.generate("Create an image of a brick wall texture")
+floortile = imagegen.generate("Create an image of a stone floor texture")
+enemy = imagegen.generate("Create an image of a fearsom dragon")
 wall_img = pygame.transform.scale(wall, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 hero_img = pygame.transform.scale(hero, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
 floor_img = pygame.transform.scale(floortile, (WIDTH // RECT_WIDTH, HEIGHT // RECT_HEIGHT))
