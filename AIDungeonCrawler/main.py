@@ -8,13 +8,13 @@ client = OpenAI(
 enemies = []
 
 # Sound Files Here
-menu = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\MenuSound.wav')
-backMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\backMusic(Temp).mp3'
-battleMusic = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\BattleTheme.wav'
-gameOver = pygame.mixer.Sound('C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\Sound Files\\gameOver.mp3')
-spellSFX = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\swordSlash.mp3'
-swordSlash = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\spellSFX.mp3'
-winSFX = 'C:\\Users\\Student\\Desktop\\Github Repositories\\AI-Dungeon-Crawler\\AIDungeonCrawler\\winSFX.mp3'
+menu = pygame.mixer.Sound('Sound Files\\MenuSound.wav')
+backMusic = 'Sound Files\\backMusic(Temp).mp3'
+battleMusic = 'Sound Files\\BattleTheme.wav'
+gameOver = pygame.mixer.Sound('Sound Files\\gameOver.mp3')
+spellSFX = 'swordSlash.mp3'
+swordSlash = 'spellSFX.mp3'
+winSFX = 'winSFX.mp3'
 
 mt.musicPlay(backMusic)
 pygame.mixer.music.set_volume(.4)
@@ -765,7 +765,7 @@ MAP_WIDTH = 50
 MAP_HEIGHT = 50
 WIDTH = 700
 HEIGHT = 700
-testing = False
+testing = True
 
 mapgen(MAP_WIDTH, MAP_HEIGHT)
 
