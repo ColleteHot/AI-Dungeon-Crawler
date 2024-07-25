@@ -15,6 +15,7 @@ gameOver = pygame.mixer.Sound('Sound Files\\gameOver.mp3')
 spellSFX = 'swordSlash.mp3'
 swordSlash = 'spellSFX.mp3'
 winSFX = 'winSFX.mp3'
+testing = True
 
 mt.musicPlay(backMusic)
 pygame.mixer.music.set_volume(.4)
